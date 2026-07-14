@@ -1,0 +1,53 @@
+---
+title: Troubleshooting
+description: Reachability, AXFR, and Route 53 failure modes for the BIND mirror.
+---
+
+## Connectivity to BIND down
+
+**Symptoms:** Lambda logs `sync_error` stage `axfr`; AXFR timeout/refused. In this lab, that usually means the VPN path to BIND is down.
+
+```bash
+aws --profile bind-demo-workload ec2 describe-vpn-connections \
+  --vpn-connection-ids "$(terraform -chdir=infra/terraform/workload output -raw vpn_connection_id)" \
+  --query 'VpnConnections[0].VgwTelemetry'
+```
+
+**Actions:**
+
+1. Verify lab VPN appliance EC2 is running.
+2. On appliance (SSM): `sudo ipsec status`
+3. Confirm routes: cloud VPC → on-prem CIDR via VGW; on-prem BIND subnet → cloud CIDR via appliance ENI.
+
+**Impact:** Route 53 keeps last synced records; cloud VPC serves stale DNS until sync succeeds.
+
+## AXFR refused
+
+**Symptoms:** AXFR error; BIND logs transfer denied.
+
+**Checks:**
+
+- Lambda source IP is in `allow-transfer` CIDR (`10.1.1.0/24`).
+- BIND security group allows TCP 53 from Lambda subnet.
+
+## Route 53 API errors
+
+**Symptoms:** `sync_error` stage `r53_read` or `r53_write`.
+
+**Checks:**
+
+- Lambda security group egress to Route 53 on 443 via NAT gateway.
+- IAM policy scoped to hosted zone ARN.
+
+## Stale data in the cloud VPC
+
+On any sync failure, Route 53 retains the last good snapshot. Adds/deletes/updates on BIND will not appear for cloud workloads until a successful mirror.
+
+## Common failure stages
+
+| Stage      | Likely cause                               |
+| ---------- | ------------------------------------------ |
+| validation | Bad EventBridge payload                    |
+| axfr       | Cannot reach BIND, BIND down, ACL/SG block |
+| r53_read   | IAM or NAT path to Route 53 API            |
+| r53_write  | Invalid change batch, throttling           |

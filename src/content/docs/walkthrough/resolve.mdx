@@ -1,0 +1,45 @@
+---
+title: Resolve in VPC
+description: Prove cloud workloads resolve the mirrored BIND record via Route 53 — not BIND directly.
+---
+
+import Tooltip from "@/components/Tooltip.astro";
+
+This step is the point of the demo: cloud DNS uses the Route 53 mirror. Echo the dig **before** starting SSM (env does not carry into the session):
+
+```bash
+echo 'dig walk.corp.internal A +short'
+aws --profile bind-demo-workload ssm start-session \
+  --target "$(terraform -chdir=infra/terraform/workload output -raw test_instance_id)"
+```
+
+On the test instance:
+
+```bash
+dig walk.corp.internal A +short
+# Expected: 10.0.1.77
+
+dig walk.corp.internal A +short @169.254.169.253
+# Same answer via AmazonProvidedDNS → Route 53 PHZ
+```
+
+That path is <Tooltip term="amazon-provided-dns" label="AmazonProvidedDNS" /> → <Tooltip term="private-hosted-zone" label="Route 53 PHZ" /> — the <Tooltip term="test-instance" label="Test_Instance" /> never queries BIND.
+
+API check from your laptop (no SSM):
+
+```bash
+aws --profile bind-demo-workload route53 list-resource-record-sets \
+  --hosted-zone-id "$(terraform -chdir=infra/terraform/workload output -raw route53_zone_id)" \
+  --query "ResourceRecordSets[?Name=='walk.corp.internal.']" \
+  --output table
+```
+
+![Route 53 corp.internal records](/bind-to-route53-mirror-walkthrough/screenshots/route53-corp-internal-records.png)
+
+## Optional proofs
+
+| Extra                   | How                                                                                                                            |
+| ----------------------- | ------------------------------------------------------------------------------------------------------------------------------ |
+| On-prem dig before sync | Deploy with `-var='enable_onprem_test_instance=true'`, dig `@<bind_private_ip>` from that host                                 |
+| AXFR ACL                | From test instance: `dig @<bind_private_ip> corp.internal AXFR` → transfer failed; only Lambda subnet `10.1.1.0/24` is allowed |
+| Fail sync on purpose    | Break reachability to BIND (e.g. stop lab VPN appliance); invoke Lambda → `sync_error`                                         |

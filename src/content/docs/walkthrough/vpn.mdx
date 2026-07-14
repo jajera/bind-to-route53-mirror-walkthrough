@@ -1,0 +1,34 @@
+---
+title: Confirm connectivity
+description: Ensure Sync_Lambda can reach BIND before you edit the zone and run a mirror.
+---
+
+Zone transfer needs a private path from the cloud sync Lambda to BIND. In this lab that path is Site-to-Site VPN — confirm at least one tunnel is `UP` before editing BIND or invoking sync.
+
+```bash
+aws --profile bind-demo-workload ec2 describe-vpn-connections \
+  --vpn-connection-ids "$(terraform -chdir=infra/terraform/workload output -raw vpn_connection_id)" \
+  --query 'VpnConnections[0].VgwTelemetry[].{OutsideIp:OutsideIpAddress,Status:Status}' \
+  --output table
+```
+
+**Pass:** at least one tunnel `UP` (the second may stay `DOWN` in this demo).
+
+Example shape:
+
+```text
+-----------------------------------------------
+|          DescribeVpnConnections             |
++------------------+-----------------+--------+
+|     OutsideIp    |     Status      |        |
++------------------+-----------------+--------+
+|  203.0.113.10    |  UP             |        |
+|  203.0.113.20    |  DOWN           |        |
++------------------+-----------------+--------+
+```
+
+![Workload virtual private gateway](/bind-to-route53-mirror-walkthrough/screenshots/workload-virtual-private-gateway.png)
+
+If both are `DOWN`, sync cannot AXFR from BIND — see [Troubleshooting](/walkthrough/troubleshooting/#connectivity-to-bind-down).
+
+Next: [Edit BIND](/walkthrough/bind/).
