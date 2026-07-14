@@ -1,0 +1,32 @@
+---
+title: FAQ
+description: Common questions about mirroring legacy BIND into Route 53.
+---
+
+## Why keep BIND at all?
+
+In many orgs BIND is deeply embedded and cannot move wholesale. This demo assumes that constraint: BIND remains the source of truth; Route 53 only mirrors for cloud consumers.
+
+## Why not point cloud workloads at BIND directly?
+
+That couples every VPC client to on-prem availability, ACLs, and latency. Mirroring into a Route 53 private hosted zone lets workloads use AmazonProvidedDNS while BIND stays authoritative where it already lives.
+
+## Why two AWS accounts?
+
+To simulate the on-prem vs cloud split without physical gear. One account stands in for the BIND estate; the other for cloud workloads and the Route 53 mirror.
+
+## Why is there a VPN in the lab?
+
+Sync_Lambda must reach BIND’s private IP for AXFR. This lab uses Site-to-Site VPN as that path. In a real estate you might use Direct Connect, existing hybrid routing, or another private path — the narrative is still BIND → mirror → Route 53.
+
+## Does the workload talk to BIND for day-to-day DNS?
+
+No. Test instances resolve via AmazonProvidedDNS → Route 53 private hosted zone. Only the sync Lambda contacts BIND.
+
+## How long until a BIND change appears in AWS?
+
+Manual invoke: seconds to tens of seconds after AXFR/API complete. Scheduled path: up to the sync interval (default 15 minutes) plus Lambda runtime.
+
+## Is this production-ready?
+
+No. It is a reference architecture: full AXFR only, no HA, no bi-directional sync, no change approval workflow.

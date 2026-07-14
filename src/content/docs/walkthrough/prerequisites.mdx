@@ -1,0 +1,47 @@
+---
+title: Prerequisites
+description: Accounts, CLI profiles, and tools for the BIND to Route 53 mirror lab.
+---
+
+import Tooltip from '@/components/Tooltip.astro';
+
+## Two AWS accounts
+
+The lab splits **legacy BIND** (simulated on-prem) from **cloud workloads + Route 53 mirror**.
+
+| Profile | Role |
+| --- | --- |
+| `bind-demo-onprem` | <Tooltip term="onprem-account" label="Simulated on-prem" /> — BIND master (+ lab VPN appliance) |
+| `bind-demo-workload` | <Tooltip term="workload-account" label="Cloud workload" /> — Sync Lambda, Route 53 PHZ, dig test instance |
+
+Override Terraform with `-var='aws_profile=...'` if your profile names differ.
+
+## Tools
+
+- AWS CLI v2 with [Session Manager plugin](https://docs.aws.amazon.com/systems-manager/latest/userguide/session-manager-working-with-install-plugin.html)
+- Terraform ≥ 1.5
+- Python 3.14 (local unit tests only; optional for the operator path)
+- Region: **`ap-southeast-2`** (Sydney)
+
+## Clone the upstream demo
+
+```bash
+git clone https://github.com/jajera/bind-to-route53-mirror-demo.git
+cd bind-to-route53-mirror-demo
+```
+
+All deploy and dig commands in this walkthrough run from that repo root.
+
+## Verify identities
+
+```bash
+export AWS_REGION=ap-southeast-2
+aws --profile bind-demo-onprem sts get-caller-identity
+aws --profile bind-demo-workload sts get-caller-identity
+```
+
+Confirm the two profiles resolve to **different** accounts.
+
+:::tip
+Optional local tests before deploy: `python3.14 -m venv .venv && source .venv/bin/activate && pip install -r requirements-dev.txt && pytest tests/ -v`
+:::

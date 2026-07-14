@@ -1,0 +1,38 @@
+---
+title: BIND to Route 53 Mirror Walkthrough
+description: Companion site for keeping legacy BIND on-prem and mirroring its zones into Route 53 for cloud workloads.
+template: splash
+hero:
+  tagline: Legacy BIND has to stay on-prem — mirror it into Route 53 so cloud workloads can still use the same private DNS names.
+  actions:
+    - text: Start walkthrough
+      link: /walkthrough/overview/
+      icon: right-arrow
+      variant: primary
+    - text: View on GitHub
+      link: https://github.com/jajera/bind-to-route53-mirror-demo
+      icon: external
+---
+
+import { Card, CardGrid } from "@astrojs/starlight/components";
+import Tooltip from "@/components/Tooltip.astro";
+
+## What you'll do
+
+<CardGrid>
+  <Card title="Stand up the lab" icon="rocket" link="/walkthrough/deploy/">
+    Simulated on-prem <Tooltip term="bind" label="BIND" /> plus a cloud VPC with
+    Lambda and a Route 53 private hosted zone.
+  </Card>
+  <Card title="Change BIND" icon="pencil" link="/walkthrough/bind/">
+    Edit <Tooltip term="corp-internal" label="corp.internal" /> on the legacy
+    master, reload, and prove BIND still answers first.
+  </Card>
+  <Card title="Mirror and resolve" icon="approve-check" link="/walkthrough/sync/">
+    Run <Tooltip term="sync-lambda" label="Sync_Lambda" />, then dig from the
+    cloud VPC via AmazonProvidedDNS — no direct BIND queries from workloads.
+  </Card>
+  <Card title="See the topology" icon="puzzle" link="/architecture/topology/">
+    BIND stays authoritative; Route 53 is a read-only mirror for cloud DNS.
+  </Card>
+</CardGrid>

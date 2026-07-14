@@ -1,0 +1,41 @@
+---
+title: Deploy
+description: Deploy the lab stacks for legacy BIND plus a Route 53 mirror.
+---
+
+Clone the [upstream demo](https://github.com/jajera/bind-to-route53-mirror-demo), then deploy from that repo root:
+
+```bash
+git clone https://github.com/jajera/bind-to-route53-mirror-demo.git
+cd bind-to-route53-mirror-demo
+./scripts/deploy_stacks.sh
+```
+
+Deploy order (automated by the script):
+
+1. On-prem stand-in — VPC, BIND master, lab VPN appliance (+ EIP)
+2. Cloud — VPC, Sync Lambda, Route 53 private zone, dig test instance (+ VGW / VPN for AXFR reachability)
+3. On-prem — finish lab VPN appliance config from cloud tunnel outputs
+
+Wait **1–2 minutes** for SSM **Online** on BIND, the lab VPN appliance, and the workload test instance.
+
+## Capture outputs
+
+```bash
+terraform -chdir=infra/terraform/onprem output
+terraform -chdir=infra/terraform/workload output
+```
+
+Useful values: `bind_instance_id`, `bind_private_ip`, `vpn_connection_id`, `sync_lambda_name`, `route53_zone_id`, `test_instance_id`.
+
+:::caution
+Always apply the cloud stack before the final on-prem apply. Do not run on-prem apply alone before the workload stack exists.
+:::
+
+:::danger
+Tear down when idle (`./scripts/destroy_stacks.sh`) — lab VPN charges dominate cost (~$1.20/day).
+:::
+
+Optional: `./scripts/deploy_stacks.sh -var='enable_onprem_test_instance=true'` for an on-prem dig client (proves BIND authority before mirror).
+
+Next: [Confirm connectivity](/walkthrough/vpn/).

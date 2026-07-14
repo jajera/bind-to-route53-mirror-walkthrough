@@ -1,0 +1,58 @@
+---
+title: Overview
+description: Purpose, audience, and scope for the BIND to Route 53 mirror walkthrough.
+---
+
+import Tooltip from "@/components/Tooltip.astro";
+
+## Purpose
+
+Many environments still run **legacy BIND** that cannot realistically migrate — it stays the DNS authority on-prem. Cloud workloads still need those same private names.
+
+This walkthrough shows how to **leave BIND in place** and **mirror** it into a <Tooltip term="private-hosted-zone" label="Route 53 private hosted zone" /> so VPC consumers resolve via AmazonProvidedDNS. A scheduled <Tooltip term="sync-lambda" label="Sync_Lambda" /> pulls the zone from BIND (AXFR), diffs Route 53, and applies changes.
+
+The lab simulates on-prem and cloud with two AWS accounts. Hybrid reachability for the zone transfer uses <Tooltip term="site-to-site-vpn" label="Site-to-Site VPN" /> in this demo.
+
+Infrastructure and sync code live in the <Tooltip term="upstream-demo-repo" label="upstream demo repository" />. Use this site to run the path end to end; use the demo repo as the source of truth for Terraform and Lambda.
+
+## What you prove
+
+| Step           | Proof                                                                                                                                                                  |
+| -------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Connectivity   | Sync Lambda can reach BIND (lab: at least one VPN tunnel `UP`)                                                                                                         |
+| BIND authority | Record answers immediately on BIND after `rndc reload`                                                                                                                 |
+| Mirror         | Lambda returns `"status": "success"`; CloudWatch shows `axfr_complete` / `sync_success`                                                                                |
+| Cloud DNS      | `dig` on the <Tooltip term="test-instance" label="test instance" /> returns the mirrored A record via <Tooltip term="amazon-provided-dns" label="AmazonProvidedDNS" /> |
+
+## Target audience
+
+Platform and network engineers who need cloud DNS from a BIND estate that must remain on-prem, and who are comfortable with AWS CLI profiles, Terraform, and <Tooltip term="session-manager" label="Session Manager" />.
+
+## Non-goals
+
+- Replacing or migrating off BIND
+- Production DNS HA, <Tooltip term="ixfr" label="IXFR" />, or bi-directional sync (Route 53 → BIND)
+- Public delegation of `corp.internal`
+- Replacing the upstream demo as the code source of truth
+
+## What this is / What this is not
+
+| What this is                                                   | What this is not                       |
+| -------------------------------------------------------------- | -------------------------------------- |
+| A walkthrough for mirroring legacy BIND into Route 53          | A BIND migration or cutover guide      |
+| Operational path: deploy → edit BIND → sync → resolve in cloud | A live managed lab                     |
+| Companion docs with upstream links pinned to `main`            | The Terraform / Lambda source of truth |
+
+**View on GitHub:** [jajera/bind-to-route53-mirror-demo](https://github.com/jajera/bind-to-route53-mirror-demo)
+
+## Story to keep in mind
+
+1. **BIND stays authoritative** — it holds <Tooltip term="corp-internal" label="corp.internal" />; day-to-day cloud queries do not talk to BIND.
+2. **Route 53 is the cloud mirror** — workloads resolve private names through AmazonProvidedDNS against the PHZ.
+3. **Mirror, not dual-write** — change BIND → sync → Route 53 catches up.
+4. **Reachability is required for sync** — the Lambda must reach BIND private IP for AXFR (this lab uses a <Tooltip term="vpn-tunnel" label="VPN tunnel" />); the Route 53 API uses <Tooltip term="nat-gateway" label="NAT" /> → HTTPS, not that path.
+5. **Stale is expected on failure** — if AXFR or API fails, Route 53 keeps the <Tooltip term="stale-snapshot" label="last good snapshot" /> until sync succeeds again.
+
+:::danger
+The lab VPN costs about **$0.05/hr** (~**$1.20/day**) while provisioned. Tear down when idle — see [Teardown](/walkthrough/teardown/).
+:::

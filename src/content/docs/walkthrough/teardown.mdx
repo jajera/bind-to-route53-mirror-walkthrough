@@ -1,0 +1,16 @@
+---
+title: Teardown
+description: Destroy the lab stacks when finished to stop ongoing charges.
+---
+
+From the upstream demo repo root:
+
+```bash
+./scripts/destroy_stacks.sh
+```
+
+Cloud stack is destroyed first so the hosted zone and lab VPN tear down cleanly.
+
+:::danger
+Lab VPN charges stop only when the VPN connection is deleted (~$0.05/hr while provisioned). Destroy when idle.
+:::

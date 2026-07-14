@@ -1,0 +1,48 @@
+---
+title: Topology
+description: Legacy BIND as DNS authority with a Route 53 private-zone mirror for cloud workloads.
+---
+
+import Tooltip from '@/components/Tooltip.astro';
+
+## What the diagram shows
+
+**Left:** simulated on-prem where legacy <Tooltip term="bind" label="BIND" /> remains authoritative for `corp.internal`.  
+**Right:** cloud VPC where workloads resolve the same names from a Route 53 <Tooltip term="phz" label="private hosted zone" /> after sync.
+
+Hybrid reachability for zone transfer is drawn as Site-to-Site VPN in this lab. Treat that as how Sync_Lambda reaches BIND — not as the primary lesson.
+
+![Architecture](/bind-to-route53-mirror-walkthrough/diagrams/architecture.svg)
+
+Editable source: [architecture.drawio](https://github.com/jajera/bind-to-route53-mirror-demo/tree/main/docs/diagrams/architecture.drawio) · [AWS Icons](https://jajera.github.io/aws-icons)
+
+| Side | Role |
+| --- | --- |
+| On-prem (<Tooltip term="onprem-vpc" label="OnPrem_VPC" />) | <Tooltip term="bind-ec2" label="BIND_EC2" /> (authority), optional on-prem dig client; VPN appliance only for lab reachability |
+| Cloud (<Tooltip term="workload-vpc" label="Workload_VPC" />) | <Tooltip term="sync-lambda" label="Sync_Lambda" />, Route 53 PHZ `corp.internal`, <Tooltip term="test-instance" label="Test_Instance" />; EventBridge schedule; NAT for Route 53 API |
+
+## Traffic paths
+
+| Flow | Why it matters |
+| --- | --- |
+| Workload DNS | Test instance → <Tooltip term="amazon-provided-dns" label="AmazonProvidedDNS" /> → Route 53 mirror (cloud day-to-day path) |
+| <Tooltip term="axfr" label="AXFR" /> | Sync_Lambda pulls full zone from BIND (lab path crosses VPN) |
+| Route 53 API | Lambda → NAT → Route 53 HTTPS (mirror apply; not via VPN) |
+
+## Stack defaults
+
+| Setting | Value |
+| --- | --- |
+| On-prem CIDR | `10.0.0.0/16` |
+| Workload CIDR | `10.1.0.0/16` |
+| Sync interval | <Tooltip term="sync-interval" label="15 minutes" /> |
+| IgnoreTTL | <Tooltip term="ignore-ttl" label="true" /> |
+| Region | `ap-southeast-2` |
+
+## Explicit non-goals
+
+- Migrating off BIND or making Route 53 authoritative for the enterprise zone
+- Public delegation of `corp.internal`
+- IXFR — full AXFR only
+- Bi-directional sync (Route 53 → BIND)
+- HA / multi-region for BIND or Lambda

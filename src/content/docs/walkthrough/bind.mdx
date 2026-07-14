@@ -1,0 +1,42 @@
+---
+title: Edit BIND
+description: Change a record on the legacy BIND master and prove it answers before any Route 53 mirror.
+---
+
+import Tooltip from "@/components/Tooltip.astro";
+
+BIND remains the source of truth. Edit the zone on the master — Route 53 will only catch up after sync.
+
+```bash
+aws --profile bind-demo-onprem ssm start-session \
+  --target "$(terraform -chdir=infra/terraform/onprem output -raw bind_instance_id)"
+```
+
+On the instance:
+
+```bash
+sudo vim /var/named/corp.internal.zone
+```
+
+Add or change an A record (and bump the SOA serial, e.g. `YYYYMMDDNN`):
+
+```dns
+walk  IN  A  10.0.1.77
+```
+
+Reload with <Tooltip term="rndc" label="rndc" /> and verify with <Tooltip term="dig" label="dig" />:
+
+```bash
+sudo rndc reload
+sudo rndc status
+dig @127.0.0.1 walk.corp.internal A +short
+# Expected: 10.0.1.77
+```
+
+Exit the <Tooltip term="session-manager" label="SSM" /> session when done (`exit`).
+
+:::tip
+This proves BIND authority **before** any Route 53 sync. The cloud test instance will not see `walk.corp.internal` until the next successful mirror.
+:::
+
+Next: [Sync Lambda](/walkthrough/sync/).
