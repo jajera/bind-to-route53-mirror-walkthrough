@@ -10,7 +10,7 @@ Documentation companion for keeping **legacy BIND** on-prem and mirroring it int
 
 **Upstream demo:** [jajera/bind-to-route53-mirror-demo](https://github.com/jajera/bind-to-route53-mirror-demo)
 
-**Deployed site:** <https://jajera.github.io/bind-to-route53-mirror-walkthrough/>
+**Deployed site:** <https://bind-to-route53-mirror-walkthrough.johna.kiwi/>
 
 ## Quick start
 
