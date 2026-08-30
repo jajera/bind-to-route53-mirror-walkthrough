@@ -15,6 +15,9 @@ export default defineConfig({
       favicon: '/favicon.svg',
       description:
         'Walkthrough companion for keeping legacy BIND on-prem and mirroring it into Route 53 for cloud workloads.',
+      components: {
+        Head: "./src/components/Head.astro",
+      },
       head: [
         {
           tag: 'meta',
