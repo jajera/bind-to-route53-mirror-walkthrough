@@ -1,11 +1,16 @@
 import { defineConfig } from "astro/config";
 import starlight from "@astrojs/starlight";
+import { unified } from "@astrojs/markdown-remark";
 import starlightImageZoom from "starlight-image-zoom";
 import mermaid from "astro-mermaid";
 
 export default defineConfig({
   site: "https://bind-to-route53-mirror-walkthrough.johna.kiwi",
   base: "/",
+  // starlight-image-zoom still needs the remark/rehype pipeline (not Sätteri).
+  markdown: {
+    processor: unified(),
+  },
   integrations: [
     mermaid(),
     starlight({
