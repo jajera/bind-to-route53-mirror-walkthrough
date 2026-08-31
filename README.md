@@ -1,23 +1,25 @@
-# bind-to-route53-mirror-walkthrough
+# BIND to Route 53 Mirror Walkthrough
 
 Documentation companion for keeping **legacy BIND** on-prem and mirroring it into a **Route 53 private hosted zone** so cloud workloads can resolve the same private names.
 
-| What this is | What this is not |
-| --- | --- |
-| A static walkthrough and architecture reference | The Terraform / Lambda source |
-| Guidance for edit BIND → sync → resolve in cloud | A BIND migration or cutover guide |
-| Companion docs with upstream links pinned to `main` | A live AWS lab environment |
+**Site:** https://bind-to-route53-mirror-walkthrough.johna.kiwi/
 
-**Upstream demo:** [jajera/bind-to-route53-mirror-demo](https://github.com/jajera/bind-to-route53-mirror-demo)
-
-**Deployed site:** <https://bind-to-route53-mirror-walkthrough.johna.kiwi/>
+Companion lab: [jajera/bind-to-route53-mirror-demo](https://github.com/jajera/bind-to-route53-mirror-demo).
 
 ## Quick start
 
 ```bash
 npm install
 npm run dev
-npm run build
+```
+
+Open the local preview URL (usually http://localhost:4321/).
+
+## Structure
+
+```text
+src/content/docs/     Walkthrough (Astro Starlight)
+public/               Favicon, CNAME, OG image, diagrams, screenshots
 ```
 
 ## Walkthrough path
