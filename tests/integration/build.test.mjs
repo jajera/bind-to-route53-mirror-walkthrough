@@ -38,21 +38,23 @@ describe('Integration: build and structure', () => {
 
   it('sidebar follows progressive walkthrough sections', () => {
     const cfg = fs.readFileSync(path.join(ROOT, 'astro.config.mjs'), 'utf8');
-    expect(cfg).toContain("label: 'Home'");
-    const intro = cfg.indexOf("label: 'Introduction'");
-    const arch = cfg.indexOf("label: 'Architecture'");
-    const walk = cfg.indexOf("label: 'Walkthrough'");
-    const ops = cfg.indexOf("label: 'Operations'");
-    const ref = cfg.indexOf("label: 'Reference'");
+    expect(cfg).toMatch(/label:\s*["']Home["']/);
+    const intro = cfg.search(/label:\s*["']Introduction["']/);
+    const arch = cfg.search(/label:\s*["']Architecture["']/);
+    const walk = cfg.search(/label:\s*["']Walkthrough["']/);
+    const ops = cfg.search(/label:\s*["']Operations["']/);
+    const ref = cfg.search(/label:\s*["']Reference["']/);
     expect(intro).toBeGreaterThan(-1);
     expect(arch).toBeGreaterThan(intro);
     expect(walk).toBeGreaterThan(arch);
     expect(ops).toBeGreaterThan(walk);
     expect(ref).toBeGreaterThan(ops);
-    expect(cfg).toContain("slug: 'walkthrough/deploy'");
-    expect(cfg).toContain("slug: 'walkthrough/sync'");
-    expect(cfg).toContain('starlight-theme-vintage');
-    expect(cfg).toContain('starlight-base-path');
+    expect(cfg).toMatch(/slug:\s*["']walkthrough\/deploy["']/);
+    expect(cfg).toMatch(/slug:\s*["']walkthrough\/sync["']/);
+    expect(cfg).toContain('patina-tokens.css');
+    expect(cfg).toContain('ThemeSelect');
+    expect(cfg).not.toContain('starlight-theme-vintage');
+    expect(cfg).not.toContain('starlight-base-path');
   });
 
   it('capture screenshots are present', () => {

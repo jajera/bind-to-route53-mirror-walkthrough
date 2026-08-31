@@ -1,4 +1,12 @@
-export const glossary: Record<string, string> = {
+export type GlossaryEntry =
+  | string
+  | {
+      definition: string;
+      url?: string;
+      urlLabel?: string;
+    };
+
+export const glossary: Record<string, GlossaryEntry> = {
   // Accounts and VPCs
   'onprem-account':
     'Simulated on-premises AWS account (CLI profile `bind-demo-onprem`) with BIND and the VPN appliance.',
@@ -97,3 +105,15 @@ export const glossary: Record<string, string> = {
   'primary-region':
     '`ap-southeast-2` (Sydney) — default region for both demo accounts and stacks.',
 };
+
+export function resolveGlossaryEntry(entry: GlossaryEntry | undefined) {
+  if (!entry) return { definition: undefined, url: undefined, urlLabel: undefined };
+  if (typeof entry === "string") {
+    return { definition: entry, url: undefined, urlLabel: undefined };
+  }
+  return {
+    definition: entry.definition,
+    url: entry.url,
+    urlLabel: entry.urlLabel ?? entry.url,
+  };
+}

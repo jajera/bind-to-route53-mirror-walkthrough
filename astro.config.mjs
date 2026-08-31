@@ -1,9 +1,7 @@
-import { defineConfig } from 'astro/config';
-import starlight from '@astrojs/starlight';
-import starlightThemeVintage from 'starlight-theme-vintage';
-import { starlightBasePath } from 'starlight-base-path';
-import starlightImageZoom from 'starlight-image-zoom';
-import mermaid from 'astro-mermaid';
+import { defineConfig } from "astro/config";
+import starlight from "@astrojs/starlight";
+import starlightImageZoom from "starlight-image-zoom";
+import mermaid from "astro-mermaid";
 
 export default defineConfig({
   site: "https://bind-to-route53-mirror-walkthrough.johna.kiwi",
@@ -11,81 +9,96 @@ export default defineConfig({
   integrations: [
     mermaid(),
     starlight({
-      title: 'BIND to Route 53 Mirror Walkthrough',
-      favicon: '/favicon.svg',
+      title: "BIND to Route 53 Mirror Walkthrough",
+      favicon: "/favicon.svg",
       description:
-        'Walkthrough companion for keeping legacy BIND on-prem and mirroring it into Route 53 for cloud workloads.',
+        "Walkthrough companion for keeping legacy BIND on-prem and mirroring it into Route 53 for cloud workloads.",
+      customCss: [
+        "./src/styles/patina-tokens.css",
+        "./src/styles/splash-overrides.css",
+      ],
       components: {
+        ThemeSelect: "./src/components/ThemeSelect.astro",
         Head: "./src/components/Head.astro",
       },
       head: [
         {
-          tag: 'meta',
+          tag: "meta",
           attrs: {
-            property: 'og:image',
+            property: "og:image",
             content:
-              'https://jajera.github.io/bind-to-route53-mirror-walkthrough/og-image.png',
+              "https://bind-to-route53-mirror-walkthrough.johna.kiwi/og-image.png",
           },
         },
         {
-          tag: 'meta',
+          tag: "meta",
           attrs: {
-            name: 'twitter:image',
+            property: "og:image:alt",
             content:
-              'https://jajera.github.io/bind-to-route53-mirror-walkthrough/og-image.png',
+              "BIND to Route 53 Mirror Walkthrough — leave BIND authoritative, mirror into Route 53",
+          },
+        },
+        {
+          tag: "meta",
+          attrs: {
+            name: "twitter:image",
+            content:
+              "https://bind-to-route53-mirror-walkthrough.johna.kiwi/og-image.png",
           },
         },
       ],
-      plugins: [starlightThemeVintage(), starlightBasePath(), starlightImageZoom()],
+      plugins: [starlightImageZoom()],
       social: [
         {
-          icon: 'github',
-          label: 'Source Repository',
-          href: 'https://github.com/jajera/bind-to-route53-mirror-walkthrough',
+          icon: "github",
+          label: "Source Repository",
+          href: "https://github.com/jajera/bind-to-route53-mirror-walkthrough",
         },
       ],
       editLink: {
         baseUrl:
-          'https://github.com/jajera/bind-to-route53-mirror-walkthrough/edit/main/',
+          "https://github.com/jajera/bind-to-route53-mirror-walkthrough/edit/main/",
       },
+      lastUpdated: true,
+      pagination: true,
       sidebar: [
-        { label: 'Home', link: '/' },
+        { label: "Home", link: "/" },
         {
-          label: 'Introduction',
+          label: "Introduction",
           items: [
-            { label: 'Overview', slug: 'walkthrough/overview' },
-            { label: 'Prerequisites', slug: 'walkthrough/prerequisites' },
+            { label: "Overview", slug: "walkthrough/overview" },
+            { label: "Prerequisites", slug: "walkthrough/prerequisites" },
           ],
         },
         {
-          label: 'Architecture',
+          label: "Architecture",
           items: [
-            { label: 'Topology', slug: 'architecture/topology' },
-            { label: 'Sync Pipeline', slug: 'architecture/pipeline' },
+            { label: "Topology", slug: "architecture/topology" },
+            { label: "Sync Pipeline", slug: "architecture/pipeline" },
           ],
         },
         {
-          label: 'Walkthrough',
+          label: "Walkthrough",
           items: [
-            { label: 'Deploy', slug: 'walkthrough/deploy' },
-            { label: 'Confirm connectivity', slug: 'walkthrough/vpn' },
-            { label: 'Edit BIND', slug: 'walkthrough/bind' },
-            { label: 'Sync Lambda', slug: 'walkthrough/sync' },
-            { label: 'Resolve in VPC', slug: 'walkthrough/resolve' },
+            { label: "Deploy", slug: "walkthrough/deploy" },
+            { label: "Confirm connectivity", slug: "walkthrough/vpn" },
+            { label: "Edit BIND", slug: "walkthrough/bind" },
+            { label: "Sync Lambda", slug: "walkthrough/sync" },
+            { label: "Resolve in VPC", slug: "walkthrough/resolve" },
           ],
         },
         {
-          label: 'Operations',
+          label: "Operations",
           items: [
-            { label: 'Teardown', slug: 'walkthrough/teardown' },
-            { label: 'Troubleshooting', slug: 'walkthrough/troubleshooting' },
+            { label: "Teardown", slug: "walkthrough/teardown" },
+            { label: "Troubleshooting", slug: "walkthrough/troubleshooting" },
           ],
         },
         {
-          label: 'Reference',
+          label: "Reference",
           items: [
-            { label: 'FAQ', slug: 'reference/faq' },
-            { label: 'Links', slug: 'reference/links' },
+            { label: "FAQ", slug: "reference/faq" },
+            { label: "Links", slug: "reference/links" },
           ],
         },
       ],
